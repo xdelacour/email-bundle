@@ -1,0 +1,12 @@
+Azine\EmailBundle\Entity\NotificationType:
+  type: entity
+  repositoryClass: Azine\EmailBundle\Entity\Repositories\NotificationTypeRepository
+  table: notification_type
+  fields:
+    id:                                                         # ID of the notification
+      type: integer(9)
+      id: true
+      generator:
+        strategy: AUTO
+    label:               { type: string(255)  }
+    template:            { type: string(255)  }                 # the twig template to be used to render the txt and html-version of this notification

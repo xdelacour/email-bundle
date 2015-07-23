@@ -44,9 +44,9 @@ class Notification
     private $content;
 
     /**
-     * @var string
+     * @var integer
      */
-    private $template;
+    private $type;
 
     /**
      * @var boolean
@@ -148,26 +148,26 @@ class Notification
     }
 
     /**
-     * Set template
+     * Set type
      *
-     * @param  string       $template
+     * @param  NotificationType $type
      * @return Notification
      */
-    public function setTemplate($template)
+    public function setType($type)
     {
-        $this->template = $template;
+        $this->type = $type;
 
         return $this;
     }
 
     /**
-     * Get template
+     * Get type
      *
-     * @return string
+     * @return NotificationType
      */
-    public function getTemplate()
+    public function getType()
     {
-        return $this->template;
+        return $this->type;
     }
 
     /**

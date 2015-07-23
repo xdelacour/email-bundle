@@ -316,7 +316,7 @@ class AzineNotifierService implements NotifierServiceInterface
             $itemVars['notification'] = $notification;
             $itemVars['recipient'] = $recipient;
 
-            $itemTemplateName = $notification->getTemplate();
+            $itemTemplateName = $notification->getType()->getTemplate();
 
             $contentItems[] = array($itemTemplateName => $itemVars);
         }
@@ -463,6 +463,11 @@ class AzineNotifierService implements NotifierServiceInterface
             return array();
         }
 
+        $userNotificationTypes = array();
+        foreach ($recipient->getNotificationsTypes() as $notificationType) {
+            $userNotificationTypes[] = $notificationType->getId();
+        }
+
         // regularly sent notifications now
         if ($sendNotifications) {
             $qb = $this->em->createQueryBuilder()
@@ -471,8 +476,10 @@ class AzineNotifierService implements NotifierServiceInterface
                 ->andWhere("n.sent is null")
                 ->andWhere("n.recipient_id = :recipientId")
                 ->setParameter('recipientId', $recipient->getId())
+                ->andWhere("n.type in (:recipientNotificationTypes)")
+                ->setParameter('recipientNotificationTypes', implode(',', $userNotificationTypes))
                 ->orderBy("n.importance", "desc")
-                ->orderBy("n.template", "asc")
+                ->orderBy("n.type", "asc")
                 ->orderBy("n.title", "asc");
             $notifications = $qb->getQuery()->execute();
 
@@ -485,8 +492,10 @@ class AzineNotifierService implements NotifierServiceInterface
                 ->andWhere("n.send_immediately = true")
                 ->andWhere("n.recipient_id = :recipientId")
                 ->setParameter('recipientId', $recipient->getId())
+                ->andWhere("n.type in :recipientNotificationTypes")
+                ->setParameter('recipientNotificationTypes', implode(',', $userNotificationTypes))
                 ->orderBy("n.importance", "desc")
-                ->orderBy("n.template", "asc")
+                ->orderBy("n.type", "asc")
                 ->orderBy("n.title", "asc");
             $notifications = $qb->getQuery()->execute();
         }
@@ -583,22 +592,22 @@ class AzineNotifierService implements NotifierServiceInterface
     /**
      * Convenience-function to add and save a Notification-entity
      *
-     * @param  integer      $recipientId     the ID of the recipient of this notification => see RecipientProvider.getRecipient($id)
-     * @param  string       $title           the title of the notification. depending on the recipients settings, multiple notifications are sent in one email.
-     * @param  string       $content         the content of the notification
-     * @param  string       $template        the twig-template to render the notification with
-     * @param  array        $templateVars    the parameters used in the twig-template, 'notification' => Notification and 'recipient' => RecipientInterface will be added to this array when rendering the twig-template.
-     * @param  integer      $importance      important messages are at the top of the notification-emails, un-important at the bottom.
-     * @param  boolean      $sendImmediately whether or not to ignore the recipients mailing-preference and send the notification a.s.a.p.
+     * @param  integer          $recipientId     the ID of the recipient of this notification => see RecipientProvider.getRecipient($id)
+     * @param  string           $title           the title of the notification. depending on the recipients settings, multiple notifications are sent in one email.
+     * @param  string           $content         the content of the notification
+     * @param  NotificationType $type        the twig-template to render the notification with
+     * @param  array            $templateVars    the parameters used in the twig-template, 'notification' => Notification and 'recipient' => RecipientInterface will be added to this array when rendering the twig-template.
+     * @param  integer          $importance      important messages are at the top of the notification-emails, un-important at the bottom.
+     * @param  boolean          $sendImmediately whether or not to ignore the recipients mailing-preference and send the notification a.s.a.p.
      * @return Notification
      */
-    public function addNotification($recipientId, $title, $content, $template, $templateVars, $importance, $sendImmediately)
+    public function addNotification($recipientId, $title, $content, $type, $templateVars, $importance, $sendImmediately)
     {
         $notification = new Notification();
         $notification->setRecipientId($recipientId);
         $notification->setTitle($title);
         $notification->setContent($content);
-        $notification->setTemplate($template);
+        $notification->setType($type);
         $notification->setImportance($importance);
         $notification->setSendImmediately($sendImmediately);
         $notification->setVariables($templateVars);
@@ -624,12 +633,12 @@ class AzineNotifierService implements NotifierServiceInterface
      */
     public function addNotificationMessage($recipientId, $title, $content, $goToUrl = null)
     {
-        $contentItemTemplate = $this->configParameter[AzineEmailExtension::TEMPLATES."_".AzineEmailExtension::CONTENT_ITEM_TEMPLATE];
+        $nt = $this->em->getRepository('AzineEmailBundle:NotificationType');
+        $contentItemTemplate = $nt->findOneByTemplate($this->configParameter[AzineEmailExtension::TEMPLATES."_".AzineEmailExtension::CONTENT_ITEM_TEMPLATE]);
         $templateVars = array();
         if ($goToUrl != null) {
             $templateVars['goToUrl'] = $goToUrl;
         }
-        $this->addNotification($recipientId, $title, $content, $contentItemTemplate, $this->templateProvider->addTemplateVariablesFor($contentItemTemplate, $templateVars), Notification::IMPORTANCE_NORMAL, false);
+        $this->addNotification($recipientId, $title, $content, $contentItemTemplate, $this->templateProvider->addTemplateVariablesFor($contentItemTemplate->getTemplate(), $templateVars), Notification::IMPORTANCE_NORMAL, false);
     }
-
 }
