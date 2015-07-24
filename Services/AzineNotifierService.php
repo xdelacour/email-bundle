@@ -477,7 +477,7 @@ class AzineNotifierService implements NotifierServiceInterface
                 ->andWhere("n.recipient_id = :recipientId")
                 ->setParameter('recipientId', $recipient->getId())
                 ->andWhere("n.type in (:recipientNotificationTypes)")
-                ->setParameter('recipientNotificationTypes', implode(',', $userNotificationTypes))
+                ->setParameter('recipientNotificationTypes', $userNotificationTypes)
                 ->orderBy("n.importance", "desc")
                 ->orderBy("n.type", "asc")
                 ->orderBy("n.title", "asc");
@@ -493,7 +493,7 @@ class AzineNotifierService implements NotifierServiceInterface
                 ->andWhere("n.recipient_id = :recipientId")
                 ->setParameter('recipientId', $recipient->getId())
                 ->andWhere("n.type in :recipientNotificationTypes")
-                ->setParameter('recipientNotificationTypes', implode(',', $userNotificationTypes))
+                ->setParameter('recipientNotificationTypes', $userNotificationTypes)
                 ->orderBy("n.importance", "desc")
                 ->orderBy("n.type", "asc")
                 ->orderBy("n.title", "asc");
