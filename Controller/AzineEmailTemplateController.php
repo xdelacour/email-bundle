@@ -131,6 +131,9 @@ class AzineEmailTemplateController extends ContainerAware
                     $response->setContent(AzineEmailTwigExtension::addCampaignParamsToAllUrls($response->getContent(), $campaignParams));
                 }
 
+                // hack for sonata
+                echo $response->getContent();die;
+
                 return $response;
 
             // if the user is not allowed to see this mail
