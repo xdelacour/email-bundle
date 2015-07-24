@@ -492,7 +492,7 @@ class AzineNotifierService implements NotifierServiceInterface
                 ->andWhere("n.send_immediately = true")
                 ->andWhere("n.recipient_id = :recipientId")
                 ->setParameter('recipientId', $recipient->getId())
-                ->andWhere("n.type in :recipientNotificationTypes")
+                ->andWhere("n.type in (:recipientNotificationTypes)")
                 ->setParameter('recipientNotificationTypes', $userNotificationTypes)
                 ->orderBy("n.importance", "desc")
                 ->orderBy("n.type", "asc")
