@@ -464,7 +464,7 @@ class AzineNotifierService implements NotifierServiceInterface
         }
 
         $userNotificationTypes = array();
-        foreach ($recipient->getNotificationsTypes() as $notificationType) {
+        foreach ($recipient->getNotificationTypes() as $notificationType) {
             $userNotificationTypes[] = $notificationType->getId();
         }
 
